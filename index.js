@@ -39,6 +39,22 @@ const tbcarrinho = mongoose.Schema({
 });
 //Criação da tabela carrinho
 const Carrinho = mongoose.model("carrinho",tbcarrinho);
+
+
+//Construção da estrutura da tabela usuario
+const tbusuario = mongoose.Schema({
+    nomeusuario:String,
+    senha:String,
+    nomecompleto:String,
+    email:String
+})
+
+//Criação do modelo de dados, ou seja a criação da tabela 
+//efetivamente
+const Usuario = mongoose.model("usuario",tbusuario);
+
+
+
 //criação dos endpoints para o modelo produto 
 //Vamos iniciar a rota para efetuar o cadastro dos produtos
 //Esta rota recebe o verbo POST(Postar os dados do produto)
@@ -101,8 +117,6 @@ app.get("/produto/nomeproduto/:nome",cors(configCors),(req,res)=>{
 
 
 });
-
-
 //-------- Criação das rotas para o carrinho
 app.post("/carrinho/adicionar",cors(configCors),(req,res)=>{
     const dados= new Carrinho(req.body);
@@ -129,6 +143,35 @@ app.delete("/carrinho/removeritem/:id",cors(configCors),(req,res)=>{
     res.status(204).send({rs:'Item removido'});
     });
 });
+//Rotas para o usuario
+app.post("/usuario/cadastro",cors(configCors),(req,res)=>{
+    const dados = new Usuario(req.body);
+    dados.save().then(()=>{
+        res.status(201).send({rs:`Cadastro efetuado com sucesso`})
+    }).catch((error)=>res.status(400).send({rs:`Erro ao tentr cadastrar ${error}`}));
+});
+
+    app.post("/usuario/login",cors(configCors),(req,res)=>{
+        const us = req.body.nomeusuario;
+        const sh = req.body.senha;
+        Usuario.find({nomeusuario:us,senha:sh},(erro,dados)=>{
+            if(erro){
+                res.status(400).send({rs:`Erro ao tentar executar a consulta ${erro}`})
+            }
+            res.status(200).send({rs:dados});
+        });
+    });
+
+    app.put("/usuario/atualizar/:id",cors(configCors),(req,res)=>{
+        Usuario.findByIdAndUpdate(req.params.id,req.body,(erro,dados)=>{
+            if(erro){
+                res.status(400).send({rs:`Erro ao tentar atualizar ${erro}`});
+                return;
+            }
+            res.status(200).send({rs:`Dados atualizados`});
+        })
+    });
+
 
 
 app.listen("5000",()=>console.log("Servidor online na porta 5000"));
